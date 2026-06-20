@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}আমার প্রোফাইল - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start;">
+        
+        <!-- Profile Info Card -->
+        <div class="card" style="position: sticky; top: 100px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 80px; height: 80px; background: var(--primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; color: #fff; margin-bottom: 15px;">
+                    {{ request.user.username|make_list|first|upper }}
+                </div>
+                <h2 style="font-size: 22px;">{{ request.user.username }}</h2>
+                <span style="font-size: 13px; color: var(--text-muted);">নিবন্ধিত: {{ profile.created_at|date:"d M Y" }}</span>
+                
+                <div style="margin-top: 15px;">
+                    {% if profile.is_verified %}
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 12px; padding: 6px 14px;">
+                            <i class="fa-solid fa-circle-check"></i> যাচাইকৃত রিপোর্টার
+                        </span>
+                    {% else %}
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 12px; padding: 6px 14px;">
+                            <i class="fa-solid fa-clock-rotate-left"></i> সাধারণ রিপোর্টার
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Profile update form -->
+            <form method="POST" action="{% url 'accounts:profile' %}" style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+                {% csrf_token %}
+                <h3 style="font-size: 16px; margin-bottom: 15px;"><i class="fa-solid fa-user-gear"></i> সেটিংস আপডেট করুন</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">ইমেইল ঠিকানা</label>
+                    <input type="email" name="email" class="form-control" value="{{ form.email.value }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ভূমিকা / পরিচয়</label>
+                    <select name="role" class="form-select">
+                        {% for value, text in form.fields.role.choices %}
+                            <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ফোন নম্বর</label>
+                    <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">জাতীয় পরিচয়পত্র (NID)</label>
+                    <input type="text" name="nid" class="form-control" value="{{ form.nid.value|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">জেলা</label>
+                    <input type="text" name="district" class="form-control" value="{{ form.district.value|default:'' }}">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">প্রোফাইল পরিবর্তন সংরক্ষণ করুন</button>
+            </form>
+        </div>
+        
+        <!-- User Reports History -->
+        <div>
+            <h2 style="font-size: 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-list-check" style="color: var(--primary-light);"></i> আমার জমা করা রিপোর্ট
+            </h2>
+            
+            {% if reports %}
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    {% for report in reports %}
+                        <div class="card" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div style="flex: 1; min-width: 250px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <span class="badge {% if report.severity == 'Critical' %}badge-critical{% elif report.severity == 'High' %}badge-high{% elif report.severity == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">{% if report.severity == 'Critical' %}গুরুতর{% elif report.severity == 'High' %}উচ্চ{% elif report.severity == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}</span>
+                                    <span class="badge {% if report.status == 'Verified' %}badge-verified{% elif report.status == 'Pending' %}badge-pending{% elif report.status == 'Rejected' %}badge-rejected{% else %}badge-escalated{% endif %}">{% if report.status == 'Verified' %}যাচাইকৃত{% elif report.status == 'Pending' %}প্রক্রিয়াধীন{% elif report.status == 'Rejected' %}প্রত্যাখ্যাত{% else %}ঊর্ধ্বতন{% endif %}</span>
+                                    {% if report.is_possible_duplicate %}
+                                        <span class="badge badge-low" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245,158,11,0.2);">সম্ভাব্য নকল</span>
+                                    {% endif %}
+                                </div>
+                                <h3 style="font-size: 16px; margin-bottom: 5px;">{{ report.title }}</h3>
+                                <p style="font-size: 13px; color: var(--text-muted);">
+                                    বিভাগ: <strong>{{ report.incident_type.name }}</strong> &bull; জমা: {{ report.created_at|date:"d M Y, h:i A" }}
+                                </p>
+                            </div>
+                            <div>
+                                <a href="{% url 'reports:report_detail' pk=report.id %}" class="btn btn-outline btn-sm">
+                                    <i class="fa-solid fa-eye"></i> রিপোর্ট দেখুন
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <i class="fa-solid fa-folder-open" style="font-size: 40px; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 18px; margin-bottom: 5px;">কোন রিপোর্ট এখনও জমা হয়নি</h3>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">আপনি এখনও কোনো সীমান্ত ঘটনার রিপোর্ট জমা দেননি।</p>
+                    <a href="{% url 'reports:submit_report' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> প্রথম রিপোর্ট জমা দিন</a>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

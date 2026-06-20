@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}BGB Camp Finder - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h1 style="font-size: 30px; letter-spacing: -0.5px;">BGB Camp Directory</h1>
+            <p style="color: var(--text-muted); font-size: 14px;">Find contact phone numbers and route coordinates for Border Guard Bangladesh (BGB) camps.</p>
+        </div>
+        <button id="gps-finder-btn" onclick="fetchGPSAndSort()" class="btn btn-danger">
+            <i class="fa-solid fa-location-crosshairs"></i> Use GPS to Sort by Proximity
+        </button>
+    </div>
+
+    <div id="gps-status" style="display: none; background: rgba(16,185,129,0.1); border-left: 4px solid #10b981; padding: 12px 20px; border-radius: 0 6px 6px 0; margin-bottom: 25px; font-size: 13px;">
+        <!-- Filled dynamically -->
+    </div>
+
+    <!-- Camps Grid -->
+    <div id="camps-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
+        {% for camp in camps %}
+            <div class="card camp-card-item" data-lat="{{ camp.latitude }}" data-lon="{{ camp.longitude }}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">BGB post</span>
+                    <span class="badge badge-verified" style="font-size: 10px;">Active</span>
+                </div>
+                <h3 style="font-size: 18px; margin-bottom: 8px;">{{ camp.name }} Camp</h3>
+                
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+                    <i class="fa-solid fa-map-pin" style="color: var(--secondary); margin-right: 5px;"></i> District: <strong>{{ camp.district }}</strong><br>
+                    <span class="distance-label-span" style="display: none;">
+                        <i class="fa-solid fa-route" style="color: #10b981; margin-right: 5px;"></i> Proximity: <strong class="distance-value-strong" style="color: #52ff8f;">--</strong> km away<br>
+                    </span>
+                    <i class="fa-solid fa-location-dot" style="margin-right: 5px;"></i> Lat/Lon: <span style="font-family: monospace;">{{ camp.latitude }}, {{ camp.longitude }}</span>
+                </p>
+
+                <div style="display: flex; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <a href="tel:{{ camp.phone }}" class="btn btn-primary btn-sm" style="flex: 1; background: #10b981; box-shadow: none;">
+                        <i class="fa-solid fa-phone"></i> Call: {{ camp.phone }}
+                    </a>
+                    <a href="{{ camp.directions_url }}" target="_blank" class="btn btn-outline btn-sm">
+                        <i class="fa-solid fa-diamond-turn-right"></i> Route
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <p style="color: var(--text-muted);">No BGB camps have been registered in the database yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Haversine formula on client side for instantaneous updates!
+    function clientHaversine(lat1, lon1, lat2, lon2) {
+        var R = 6371.0; // km
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function fetchGPSAndSort() {
+        var btn = document.getElementById('gps-finder-btn');
+        var statusDiv = document.getElementById('gps-status');
+
+        statusDiv.style.display = 'none';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Accessing Location...';
+
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser.");
+            btn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Use GPS to Sort by Proximity';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var uLat = position.coords.latitude;
+                var uLon = position.coords.longitude;
+
+                statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> GPS coordinates shared successfully (Lat: ${uLat.toFixed(4)}, Lon: ${uLon.toFixed(4)}). Camps sorted by nearest first.`;
+                statusDiv.style.display = 'block';
+
+                // Grab all camp cards
+                var container = document.getElementById('camps-container');
+                var cards = Array.from(container.getElementsByClassName('camp-card-item'));
+
+                cards.forEach(function(card) {
+                    var cLat = parseFloat(card.getAttribute('data-lat'));
+                    var cLon = parseFloat(card.getAttribute('data-lon'));
+                    var dist = clientHaversine(uLat, uLon, cLat, cLon);
+
+                    // Update values in HTML
+                    card.getElementsByClassName('distance-value-strong')[0].innerText = dist.toFixed(2);
+                    card.getElementsByClassName('distance-label-span')[0].style.display = 'inline';
+                    card.setAttribute('data-dist', dist);
+                });
+
+                // Sort cards array by data-dist attribute
+                cards.sort(function(a, b) {
+                    return parseFloat(a.getAttribute('data-dist')) - parseFloat(b.getAttribute('data-dist'));
+                });
+
+                // Re-append sorted cards in container
+                container.innerHTML = '';
+                cards.forEach(function(card) {
+                    container.appendChild(card);
+                });
+
+                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sorted successfully';
+            },
+            function(error) {
+                alert("GPS error: " + error.message);
+                btn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Use GPS to Sort by Proximity';
+            },
+            { enableHighAccuracy: true }
+        );
+    }
+</script>
+{% endblock %}

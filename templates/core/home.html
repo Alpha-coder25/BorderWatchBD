@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}BorderWatch BD - সীমান্ত সম্পর্কীত ঘটনার রিপোর্টিং ও জরুরি সহায়তা{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <span class="hero-tag"><i class="fa-solid fa-triangle-exclamation"></i> নাগরিক নিরাপত্তা পোর্টাল</span>
+        <h1 class="hero-title">বাংলাদেশের সীমান্ত নিরাপত্তা ও<br><span>সীমান্ত ঘটনা পর্যবেক্ষণ</span></h1>
+        <p class="hero-subtitle">
+            বাংলাদেশের সীমান্ত অঞ্চলের জনগোষ্ঠীর ক্ষমতায়ন, অবৈধ অভিবাসন, চোরাচালান, মানব পাচার ও সহিংসতার ঘটনা রিপোর্ট করুন। নিরাপদে নিকটতম BGB ক্যাম্প খুঁজুন এবং দ্রুত সাহায্য পান।
+        </p>
+        <div class="hero-cta">
+            <a href="{% url 'reports:submit_report' %}" class="btn btn-danger"><i class="fa-solid fa-circle-exclamation"></i> রিপোর্ট করুন</a>
+            <a href="{% url 'camps:nearest_camp' %}" class="btn btn-primary"><i class="fa-solid fa-location-crosshairs"></i> জরুরি ক্যাম্প লোকেটর</a>
+            <a href="{% url 'accounts:anonymous_token' %}" class="btn btn-outline"><i class="fa-solid fa-key"></i> গেস্ট টোকেন</a>
+        </div>
+    </div>
+</section>
+
+<!-- Alerts & Notification Banner -->
+{% if alerts %}
+<section class="container" style="margin-bottom: 40px;">
+    <div style="background: rgba(168, 28, 28, 0.08); border: 1px solid rgba(168, 28, 28, 0.25); border-radius: 12px; padding: 20px;">
+        <h3 style="color: #ff5252; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-bell-exclamation fa-beat"></i> সক্রিয় ঝুঁকি সতর্কবার্তা
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for alert in alerts %}
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 12px 18px; border-radius: 8px; border-left: 3px solid {% if alert.priority == 'Critical' %}#ff5252{% elif alert.priority == 'High' %}#f59e0b{% else %}#34d399{% endif %};">
+                <div>
+                    <strong style="font-size: 14px; color: var(--text-main);">[{% if alert.type == 'danger_warning' %}ঝুঁকি সতর্কতা{% elif alert.type == 'missing_person' %}নিখোঁজ ব্যক্তি{% else %}সাধারণ বিজ্ঞপ্তি{% endif %}] {{ alert.title }}</strong>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 3px;">{{ alert.description }}</p>
+                </div>
+                <span class="badge {% if alert.priority == 'Critical' %}badge-critical{% elif alert.priority == 'High' %}badge-high{% elif alert.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">{% if alert.priority == 'Critical' %}গুরুতর{% elif alert.priority == 'High' %}উচ্চ{% elif alert.priority == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Quick Emergency Geolocation Tool -->
+<section class="container" style="margin-bottom: 50px;">
+    <div class="card" style="border: 1px solid rgba(168, 28, 28, 0.3); background: radial-gradient(circle at top right, rgba(168, 28, 28, 0.05), transparent);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div>
+                    <h2 style="font-size: 24px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-truck-medical" style="color: var(--secondary);"></i> জরুরি ক্যাম্প সহায়তা দরকার?
+                </h2>
+                <p style="color: var(--text-muted); font-size: 14px;">আপনার বর্তমান জিপিএস স্থানাঙ্ক শেয়ার করে নিকটস্থ কার্যকরী বিএজিবি ক্যাম্প দ্রুত খুঁজুন।</p>
+            </div>
+            <button id="find-camps-btn" onclick="fetchNearestCamps()" class="btn btn-danger" style="padding: 14px 28px;">
+                <i class="fa-solid fa-location-arrow"></i> নিকটস্থ ক্যাম্প খুঁজুন
+            </button>
+        </div>
+
+        <div id="nearest-camp-result" style="display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-color);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                    <h3 style="color: #ff6b6b; font-size: 16px; margin-bottom: 5px; text-transform: uppercase;">নিকটস্থ ক্যাম্প</h3>
+                    <h2 id="res-camp-name" style="font-size: 22px; margin-bottom: 10px;">BGB ক্যাম্প</h2>
+                    <p style="font-size: 14px; color: var(--text-muted);">
+                        <i class="fa-solid fa-map-location-dot"></i> District: <span id="res-camp-district">Unknown</span><br>
+                        <i class="fa-solid fa-route"></i> আনুমানিক দূরত্ব: <span id="res-camp-distance" style="color: #52ff8f; font-weight: 700;">--</span> কিমি
+                    </p>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+                    <a id="res-camp-call" href="tel:" class="btn btn-primary" style="background: #10b981; box-shadow: none;">
+                        <i class="fa-solid fa-phone"></i> কল করুন: <span id="res-camp-phone">--</span>
+                    </a>
+                    <a id="res-camp-dir" href="" target="_blank" class="btn btn-outline">
+                        <i class="fa-solid fa-diamond-turn-right"></i> রুট নির্দেশিকা দেখুন
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div id="geo-error" style="display: none; margin-top: 15px; color: #ff5252; font-size: 13px;"></div>
+    </div>
+</section>
+
+<!-- Incident Visualizer Map Section -->
+<section class="container map-section">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h2 style="font-size: 28px; letter-spacing: -0.5px;">সার্বজনীন সীমান্ত ঘটনা মানচিত্র</h2>
+            <p style="color: var(--text-muted); font-size: 14px;">সাম্প্রতিক যাচাইকৃত সীমান্ত ঘটনা ব্রাউজ করুন। সাবমিশনের জন্য স্থানাঙ্ক পেতে মানচিত্রে ক্লিক করুন।</p>
+        </div>
+        <a href="{% url 'reports:submit_report' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> এখানে রিপোর্ট জমা দিন</a>
+    </div>
+
+    <div class="map-wrapper">
+        <!-- Map Control Filters -->
+        <div class="map-filters">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">ফিল্টার:</span>
+            
+            <select id="map-filter-category" onchange="filterMap()" class="filter-select">
+                <option value="all">সব বিভাগ</option>
+                {% for category in categories %}
+                    <option value="{{ category.slug }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <select id="map-filter-severity" onchange="filterMap()" class="filter-select">
+                <option value="all">সব তীব্রতা</option>
+                <option value="Low">নিম্ন</option>
+                <option value="Medium">মধ্যম</option>
+                <option value="High">উচ্চ</option>
+                <option value="Critical">গুরুতর</option>
+            </select>
+            
+            <div id="map-info-hint" style="margin-left: auto; font-size: 12px; color: var(--primary-light);">
+                <i class="fa-solid fa-info-circle"></i> মানচিত্রে যেখানে খুশি ক্লিক করে স্থানাঙ্ক নির্বাচন করুন
+            </div>
+        </div>
+        
+        <!-- Leaflet Map Container -->
+        <div id="home-map" class="map-element"></div>
+    </div>
+</section>
+
+<!-- Platform Statistics Banner -->
+<section class="container" style="margin-top: 40px; margin-bottom: 40px;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+        <div class="card">
+            <h1 style="font-size: 42px; color: #ff5252;">{{ total_incidents }}</h1>
+            <p style="color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Verified Incidents</p>
+        </div>
+        <div class="card">
+            <h1 style="font-size: 42px; color: #34d399;">{{ camps_count }}</h1>
+            <p style="color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Active BGB Camps</p>
+        </div>
+        <div class="card">
+            <h1 style="font-size: 42px; color: #fbbf24;">100%</h1>
+            <p style="color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Civilian Monitored</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize Leaflet Map centered around Bangladesh borders
+    var map = L.map('home-map').setView([23.8103, 90.4125], 7);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
+
+    // Marker collections
+    var markers = [];
+
+    // Verified reports list passed from django template context
+    var reportData = [
+        {% for report in reports %}
+        {
+            id: {{ report.id }},
+            title: "{{ report.title|escapejs }}",
+            category: "{{ report.incident_type.slug|escapejs }}",
+            severity: "{{ report.severity|escapejs }}",
+            lat: {{ report.latitude }},
+            lng: {{ report.longitude }},
+            created_at: "{{ report.created_at|date:'d M Y' }}",
+            detail_url: "{% url 'reports:report_detail' pk=report.id %}"
+        },
+        {% endfor %}
+    ];
+
+    // Severity colors mapping
+    var severityColors = {
+        'Low': '#10b981',
+        'Medium': '#fbbf24',
+        'High': '#ef4444',
+        'Critical': '#a81c1c'
+    };
+
+    // Render markers on the map
+    function renderMarkers() {
+        // Clear existing markers
+        markers.forEach(m => map.removeLayer(m.marker));
+        markers = [];
+
+        var filterCat = document.getElementById('map-filter-category').value;
+        var filterSev = document.getElementById('map-filter-severity').value;
+
+        reportData.forEach(function(report) {
+            // Apply category filter
+            if (filterCat !== 'all' && report.category !== filterCat) return;
+            // Apply severity filter
+            if (filterSev !== 'all' && report.severity !== filterSev) return;
+
+            var markerColor = severityColors[report.severity] || '#fff';
+            
+            // Custom circle marker
+            var marker = L.circleMarker([report.lat, report.lng], {
+                radius: 8,
+                fillColor: markerColor,
+                color: '#fff',
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            // Bind popup
+            var popupContent = `
+                <div style="font-family: 'Outfit', sans-serif; color: #111; padding: 5px;">
+                    <span style="font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase;">${report.severity} Severity</span>
+                    <h4 style="margin: 4px 0; font-size: 14px; font-weight: 700;">${report.title}</h4>
+                    <p style="font-size: 11px; color: #666; margin-bottom: 8px;">Date: ${report.created_at}</p>
+                    <a href="${report.detail_url}" style="display: block; text-align: center; background: #0A3B1B; color: #fff; padding: 6px; border-radius: 4px; font-size: 12px; font-weight: 600; text-decoration: none;">সম্পূর্ণ বিবরণ দেখুন</a>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+
+            markers.push({
+                report: report,
+                marker: marker
+            });
+        });
+    }
+
+    // Filter map markers dynamically
+    function filterMap() {
+        renderMarkers();
+    }
+
+    // Call render initially
+    renderMarkers();
+
+    // Map click handler to place pin and copy coordinates
+    var tempPin = null;
+    map.on('click', function(e) {
+        var lat = e.latlng.lat.toFixed(6);
+        var lng = e.latlng.lng.toFixed(6);
+
+        if (tempPin) {
+            map.removeLayer(tempPin);
+        }
+
+        tempPin = L.marker(e.latlng).addTo(map);
+        
+        var popupContent = `
+            <div style="font-family: 'Outfit', sans-serif; color: #111; padding: 5px; text-align: center;">
+                <h4 style="margin-bottom: 4px; font-size: 13px;">নির্বাচিত স্থানাঙ্ক</h4>
+                <p style="font-size: 11px; margin-bottom: 8px; font-family: monospace;">Lat: ${lat}, Lon: ${lng}</p>
+                <a href="{% url 'reports:submit_report' %}?lat=${lat}&lon=${lng}" style="display: inline-block; background: #A81C1C; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; text-decoration: none;">এখানে রিপোর্ট করুন</a>
+            </div>
+        `;
+        tempPin.bindPopup(popupContent).openPopup();
+    });
+
+    // Geolocation and Nearest Camp fetch logic
+    function fetchNearestCamps() {
+        var btn = document.getElementById('find-camps-btn');
+        var errDiv = document.getElementById('geo-error');
+        var resultDiv = document.getElementById('nearest-camp-result');
+
+        errDiv.style.display = 'none';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Accessing GPS...';
+
+        if (!navigator.geolocation) {
+            errDiv.innerHTML = "আপনার ব্রাউজারে জিপিএস সমর্থিত নয়।";
+            errDiv.style.display = 'block';
+            btn.innerHTML = '<i class="fa-solid fa-location-arrow"></i> Find Nearest Camp';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
+
+                // Send coordinates to camps finder endpoint via AJAX
+                fetch(`/camps/nearest/?lat=${lat}&lon=${lon}&format=json`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.camps.length > 0) {
+                            var nearest = data.camps[0]; // Nearest camp is sorted first
+                            
+                            document.getElementById('res-camp-name').innerText = nearest.name + " BGB Camp";
+                            document.getElementById('res-camp-district').innerText = nearest.district;
+                            document.getElementById('res-camp-distance').innerText = nearest.distance.toFixed(2);
+                            document.getElementById('res-camp-phone').innerText = nearest.phone;
+                            document.getElementById('res-camp-call').setAttribute('href', 'tel:' + nearest.phone);
+                            document.getElementById('res-camp-dir').setAttribute('href', nearest.directions_url);
+
+                            resultDiv.style.display = 'block';
+                            resultDiv.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            errDiv.innerHTML = "কোনো সক্রিয় ক্যাম্প পাওয়া যায়নি বা সার্ভার ত্রুটি ফিরিয়েছে।";
+                            errDiv.style.display = 'block';
+                        }
+                        btn.innerHTML = '<i class="fa-solid fa-location-arrow"></i> Find Nearest Camp';
+                    })
+                    .catch(err => {
+                        errDiv.innerHTML = "সার্ভার থেকে ক্যাম্পের তথ্য আনতে ব্যর্থ।";
+                        errDiv.style.display = 'block';
+                        btn.innerHTML = '<i class="fa-solid fa-location-arrow"></i> Find Nearest Camp';
+                    });
+            },
+            function(error) {
+                var msg = "আপনার অবস্থান নির্ণয় করা যাচ্ছে না। ";
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        msg += "অবস্থান অ্যাক্সেস অস্বীকার করা হয়েছে। অনুগ্রহ করে ব্রাউজারের সেটিংসে অবস্থান অনুমতি দিন।";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        msg += "অবস্থান সম্পর্কিত তথ্য পাওয়া যাচ্ছে না।";
+                        break;
+                    case error.TIMEOUT:
+                        msg += "অবস্থানের অনুরোধ সময়সীমা অতিক্রান্ত হয়েছে।";
+                        break;
+                    default:
+                        msg += "অজানা ত্রুটি ঘটেছে।";
+                }
+                errDiv.innerHTML = msg;
+                errDiv.style.display = 'block';
+                btn.innerHTML = '<i class="fa-solid fa-location-arrow"></i> Find Nearest Camp';
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    }
+</script>
+{% endblock %}

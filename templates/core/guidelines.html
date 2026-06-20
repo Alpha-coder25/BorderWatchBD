@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}নাগরিক নিরাপত্তা নির্দেশিকা - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card" style="max-width: 850px; margin: 0 auto;">
+        <h1 style="font-size: 32px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <i class="fa-solid fa-hand-holding-hand" style="color: var(--secondary);"></i> নাগরিক নিরাপত্তা নির্দেশিকা
+        </h1>
+        <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 30px;">
+            সীমান্ত অঞ্চলের নিকটে বাস বা ভ্রমণ করার সময় উচ্চ সতর্কতা প্রয়োজন। নিচে সীমান্ত অঞ্চলের বাসিন্দা, কৃষক, ভ্রমণকারী এবং পরিবহনকর্মীদের জন্য প্রস্তাবিত নির্দেশিকা দেওয়া হল।
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 25px;">
+            <div style="display: flex; gap: 20px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <div style="font-size: 24px; color: #ff5252;"><i class="fa-solid fa-camera"></i></div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 5px;">1. রিপোর্টিং নিরাপত্তা ও প্রমাণ সংরক্ষণ</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        সীমান্ত অপরাধ বা সন্দেহজনক গতিবিধি রিপোর্ট করার সময় আপনার ব্যক্তিগত নিরাপত্তাকেই সর্বাধিক গুরুত্ব দিন। ধরা পড়ার ঝুঁকি আছে এমন পরিস্থিতিতে অস্ত্রধারী বা প্যাট্রোল ইউনিটের ছবি নেবেন না, রেকর্ড করবেন না বা তাদের কাছে যাবেন না। নিরাপদ দূরত্ব বজায় রাখুন এবং প্রতিশোধের ভয় থাকলে রিপোর্ট অজ্ঞাতভাবে জমা দিন।
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <div style="font-size: 24px; color: #fbbf24;"><i class="fa-solid fa-compass"></i></div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 5px;">2. সীমান্ত সচেতনতা</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        কোনো পরিস্থিতিতেই জিরো-লাইন অতিক্রম করবেন না, এমনকি জমি সেচ বা কাজ করতে গেলে। সীমান্ত ফেন্সের কাছে কাজ করলে আপনার কাছে যথাযথ পরিচয়পত্র (NID, ফার্ম পারমিট) রাখুন। ভ্রমণের আগে সর্বদা BGB পোস্টের অবস্থান যাচাই করুন।
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <div style="font-size: 24px; color: #10b981;"><i class="fa-solid fa-cloud-moon"></i></div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 5px;">3. রাতের সময় চলাচলে সীমাবদ্ধতা</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        রাতে (বিশেষত রাত ১০টা থেকে সকাল ৫টা পর্যন্ত) সীমান্ত অঞ্চলের একা সড়ক বা ট্রেইলে চলাচল যতটা সম্ভব পরিহার করুন। স্থানীয় পরিবহনকর্মীদের উচিত রাতে সীমান্তের কাছে যাতায়াতের ক্ষেত্রে যাত্রীদের পরিচয় যাচাই করা যাতে তারা অবৈধ পারাপার বা পাচারে জড়িত না হয়।
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <div style="font-size: 24px; color: #a78bfa;"><i class="fa-solid fa-people-group"></i></div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 5px;">4. সন্দেহভাজন কার্যকলাপ চিহ্নিতকরণ</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        সীমান্ত সংলগ্ন এলাকায় অননুমোদিত যানবাহন, অচেনা ব্যক্তিদের দলবদ্ধভাবে ঘোরাঘুরি, রাতের ফ্ল্যাশ সিগন্যাল বা কাটা সীমান্ত তার দ্রুত রিপোর্ট করুন। আপনি যদি মানব পাচারের সাক্ষী হন বা সন্দেহ করেন, তাৎক্ষণিকভাবে রিপোর্ট করুন যাতে জরুরি বিএজিবি নোটিশ পাঠানো যায়।
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center;">
+            <a href="{% url 'camps:nearest_camp' %}" class="btn btn-primary"><i class="fa-solid fa-location-arrow"></i> আপনার নিকটস্থ বিএজিবি ক্যাম্প জানুন</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

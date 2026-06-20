@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}সাপোর্ট যোগাযোগ - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card">
+        <h1 style="font-size: 28px; margin-bottom: 15px;"><i class="fa-solid fa-envelope" style="color: var(--primary-light);"></i> প্ল্যাটফর্ম টিমকে যোগাযোগ করুন</h1>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">
+            প্ল্যাটফর্ম, তথ্যের সততা সম্পর্কিত প্রশ্ন আছে, অথবা কোনো বাগ রিপোর্ট করতে চান? নিচের ফর্মটি পূরণ করুন।
+        </p>
+
+        <form method="POST" action="">
+            {% csrf_token %}
+            <!-- We can mock a POST submission or display success message -->
+            <div class="form-group">
+                <label class="form-label" for="name">আপনার নাম</label>
+                <input type="text" id="name" class="form-control" placeholder="আপনার নাম লিখুন" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="email">ইমেইল ঠিকানা</label>
+                <input type="email" id="email" class="form-control" placeholder="আপনার ইমেইল লিখুন" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="subject">বিষয়</label>
+                <input type="text" id="subject" class="form-control" placeholder="কিসের সম্পর্কিত বিষয়?" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="message">বার্তার বিস্তারিত</label>
+                <textarea id="message" class="form-control" rows="5" placeholder="এখানে আপনার বার্তাটি লিখুন..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fa-solid fa-paper-plane"></i> নিরাপদ বার্তা পাঠান
+            </button>
+        </form>
+        
+        <div style="margin-top: 30px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <p style="font-size: 13px; color: var(--text-muted);">
+                For direct security matters: <strong style="color: var(--text-main);">support@borderwatchbd.org</strong>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

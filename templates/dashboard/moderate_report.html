@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}রিপোর্ট মডারেট করুন #{{ report.id }} - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    
+    <div style="margin-bottom: 25px;">
+        <a href="{% url 'dashboard:admin_dashboard' %}" style="color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-arrow-left"></i> কন্ট্রোল প্যানেলে ফেরত যান</a>
+        <h1 style="font-size: 28px; margin-top: 10px; color: #fbbf24;"><i class="fa-solid fa-shield-halved"></i> রিপোর্ট মডারেট করুন</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">রিপোর্টের বিবরণ পর্যালোচনা করুন, স্থানাঙ্ক যাচাই করুন, স্থিতি নির্বাচন করুন এবং যাচাইকরণ নোট লিখুন।</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: start;">
+        
+        <!-- Moderation Input Form -->
+        <div class="card" style="padding: 30px;">
+            <h3 style="font-size: 18px; margin-bottom: 20px;"><i class="fa-solid fa-gavel"></i> মডারেশন সিদ্ধান্তসমূহ</h3>
+            
+            <form method="POST" action="{% url 'dashboard:moderate_report' pk=report.id %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label" for="id_status">যাচাইকরণ স্থিতি</label>
+                    <select name="status" id="id_status" class="form-select" style="border-color: #fbbf24;">
+                        <option value="Pending" {% if report.status == 'Pending' %}selected{% endif %}>প্রক্রিয়াধীন (মডারেশন কিউতে রাখুন)</option>
+                        <option value="Verified" {% if report.status == 'Verified' %}selected{% endif %}>যাচাইকৃত (পাবলিক মানচিত্রে প্রকাশ)</option>
+                        <option value="Rejected" {% if report.status == 'Rejected' %}selected{% endif %}>প্রত্যাখ্যাত (গোপন করুন এবং বাতিল করুন)</option>
+                        <option value="Escalated" {% if report.status == 'Escalated' %}selected{% endif %}>ঊর্ধ্বতন (প্রাসঙ্গিক কর্তৃপক্ষকে প্রেরণ করুন)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="id_severity">তীব্রতা পরিবর্তন করুন</label>
+                    <select name="severity" id="id_severity" class="form-select">
+                        <option value="Low" {% if report.severity == 'Low' %}selected{% endif %}>Low</option>
+                        <option value="Medium" {% if report.severity == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="High" {% if report.severity == 'High' %}selected{% endif %}>High</option>
+                        <option value="Critical" {% if report.severity == 'Critical' %}selected{% endif %}>Critical</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="id_notes">মডারেটর যাচাইকরণ নোট / কারণ</label>
+                    <textarea name="notes" id="id_notes" class="form-control" rows="6" placeholder="নির্বাচিত যাচাইকরণ ধাপ, স্থিতি পরিবর্তনের কারণ বা কর্তৃপক্ষের সাথে যোগাযোগের বিবরণ দিন..."></textarea>
+                    <span class="form-help">নোটগুলি অভ্যন্তরীণ অডিট ডাটাবেসে সংরক্ষিত হয় এবং অন্যান্য অপারেশন অ্যাডমিনদের কাছে দৃশ্যমান।</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; background: #fbbf24; color: #111; font-weight: 700; border: none; box-shadow: none;">
+                    <i class="fa-solid fa-circle-check"></i> মডারেশন প্রয়োগ করুন ও লগ করুন
+                </button>
+            </form>
+        </div>
+
+        <!-- Incident Summary Panel -->
+        <div>
+            <div class="card" style="padding: 20px; margin-bottom: 25px;">
+                <h4 style="font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">ঘটনার প্রসঙ্গ</h4>
+                <p style="font-size: 13px; margin-bottom: 8px;">Title: <strong style="color: var(--text-main);">{{ report.title }}</strong></p>
+                <p style="font-size: 13px; margin-bottom: 8px;">Category: <strong>{{ report.incident_type.name }}</strong></p>
+                <p style="font-size: 13px; margin-bottom: 8px;">রিপোর্টকারী NID: 
+                    <strong>
+                        {% if report.user and report.user.profile.nid %}
+                            {{ report.user.profile.nid }} (District: {{ report.user.profile.district|default:"None" }})
+                        {% elif report.user %}
+                            None (প্রোফাইল যাচাই নেই)
+                        {% else %}
+                            অজ্ঞাত সাবমিটার
+                        {% endif %}
+                    </strong>
+                </p>
+                <p style="font-size: 13px; margin-bottom: 8px;">Coords: <span style="font-family: monospace;">{{ report.latitude }}, {{ report.longitude }}</span></p>
+                <p style="font-size: 13px; margin-bottom: 12px; color: var(--text-muted);">{{ report.description|truncatewords:40 }}</p>
+                
+                <a href="{% url 'reports:report_detail' pk=report.id %}" target="_blank" class="btn btn-outline btn-sm" style="width: 100%;">
+                    <i class="fa-solid fa-up-right-from-square"></i> সম্পূর্ণ রিপোর্ট নতুন ট্যাবে খুলুন
+                </a>
+            </div>
+
+            <!-- Existing Verification Logs -->
+            <div class="card" style="padding: 20px;">
+                <h4 style="font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">অডিট ট্রেইল লগ</h4>
+                {% if report.verification_logs.all %}
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        {% for log in report.verification_logs.all %}
+                            <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-size: 11px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <strong>{{ log.admin_user.username }}</strong>
+                                    <span>{{ log.created_at|date:"d M H:i" }}</span>
+                                </div>
+                                <span class="badge badge-low" style="font-size: 9px; padding: 2px 6px; margin-bottom: 5px;">{{ log.previous_status }} &rarr; {{ log.new_status }}</span>
+                                <p style="color: var(--text-muted); font-style: italic;">"{{ log.notes|default:'কোন মন্তব্য রাখা হয়নি' }}"</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="font-size: 12px; color: var(--text-muted); font-style: italic;">এই ঘটনার জন্য পূর্বে কোন মডারেশন লগ নেই।</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

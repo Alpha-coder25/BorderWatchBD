@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Guest Token - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card" style="max-width: 600px;">
+        <h1 style="font-size: 28px; margin-bottom: 10px; text-align: center;"><i class="fa-solid fa-key" style="color: var(--secondary);"></i> Anonymous Reporting Token</h1>
+        <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 30px;">
+            Request a secure, single-use 24-hour token to submit border incident reports anonymously without email registration.
+        </p>
+
+        {% if token_obj %}
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--primary-light); border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center;">
+                <span style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">Your Anonymous Token</span>
+                
+                <h2 id="token-str" style="font-family: monospace; font-size: 20px; color: #52ff8f; margin: 15px 0; background: #000; padding: 12px; border-radius: 6px; border: 1px dashed #222; word-break: break-all;">
+                    {{ token_obj.token }}
+                </h2>
+                
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                    Expires on: <strong style="color: var(--text-main);">{{ token_obj.expires_at|date:"d M Y, h:i A" }}</strong> (Valid for 24h)<br>
+                    Status: <strong style="color: #ff5252;">Active until used once.</strong>
+                </p>
+
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="copyToken()" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-copy"></i> Copy Token
+                    </button>
+                    <a href="{% url 'reports:submit_report' %}?token={{ token_obj.token }}" class="btn btn-danger btn-sm">
+                        <i class="fa-solid fa-file-invoice"></i> Submit Report Now
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--text-main);"><i class="fa-solid fa-user-secret"></i> How Anonymous Reporting Works</h3>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-muted);">
+                    <li style="display: flex; gap: 10px;"><i class="fa-solid fa-shield" style="color: var(--secondary);"></i> <span>No personal credentials or identities are recorded.</span></li>
+                    <li style="display: flex; gap: 10px;"><i class="fa-solid fa-shield" style="color: var(--secondary);"></i> <span>The token validates that the submission is originating from a legitimate session.</span></li>
+                    <li style="display: flex; gap: 10px;"><i class="fa-solid fa-shield" style="color: var(--secondary);"></i> <span>Once you submit a report, the token is deactivated and marked as used.</span></li>
+                </ul>
+            </div>
+
+            <form method="POST" action="{% url 'accounts:anonymous_token' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" style="width: 100%; padding: 12px; font-size: 15px;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate New Token
+                </button>
+            </form>
+        {% endif %}
+
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 15px; font-size: 13px;">
+            <a href="{% url 'core:home' %}" style="color: var(--text-muted);"><i class="fa-solid fa-arrow-left"></i> Back to Homepage</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyToken() {
+        var tokenText = document.getElementById("token-str").innerText.trim();
+        navigator.clipboard.writeText(tokenText).then(function() {
+            alert("Token copied to clipboard!");
+        }, function(err) {
+            alert("Could not copy token: ", err);
+        });
+    }
+</script>
+{% endblock %}

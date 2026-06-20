@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}রিপোর্ট #{{ report.id }} - বিবরণ - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    
+    <!-- Header info -->
+    <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <span style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">রিপোর্ট #{{ report.id }} বিবরণ</span>
+            <h1 style="font-size: 28px; margin-top: 5px; margin-bottom: 8px;">{{ report.title }}</h1>
+            <p style="font-size: 13px; color: var(--text-muted);">
+                জমা: <strong>{{ report.created_at|date:"d M Y, h:i A" }}</strong> &bull; 
+                রিপোর্টকারী: <strong>{% if report.user %}{{ report.user.username }} (নিবন্ধিত){% else %}অতিথি (অজ্ঞাত){% endif %}</strong>
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="badge {% if report.severity == 'Critical' %}badge-critical{% elif report.severity == 'High' %}badge-high{% elif report.severity == 'Medium' %}badge-medium{% else %}badge-low{% endif %}" style="padding: 6px 14px; font-size: 12px;">{% if report.severity == 'Critical' %}গুরুতর{% elif report.severity == 'High' %}উচ্চ{% elif report.severity == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}</span>
+            <span class="badge {% if report.status == 'Verified' %}badge-verified{% elif report.status == 'Pending' %}badge-pending{% elif report.status == 'Rejected' %}badge-rejected{% else %}badge-escalated{% endif %}" style="padding: 6px 14px; font-size: 12px;">{% if report.status == 'Verified' %}যাচাইকৃত{% elif report.status == 'Pending' %}প্রক্রিয়াধীন{% elif report.status == 'Rejected' %}প্রত্যাখ্যাত{% else %}ঊর্ধ্বতন{% endif %}</span>
+            {% if report.is_priority %}
+                <span class="badge badge-critical" style="background: rgba(168,28,28,0.2); border-color:#ff5252; color:#ff5252; padding: 6px 14px; font-size: 12px;"><i class="fa-solid fa-fire"></i> Priority Flag</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 30px; align-items: start;">
+        
+        <!-- Details & Evidence -->
+        <div class="card" style="padding: 30px;">
+            <h3 style="font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <i class="fa-solid fa-align-left" style="color: var(--primary-light);"></i> বিবরণ ও মূল্যায়ন
+            </h3>
+            
+            <p style="font-size: 15px; line-height: 1.7; margin-bottom: 30px; white-space: pre-line;">
+                {{ report.description }}
+            </p>
+
+            <!-- Evidence Attachments -->
+            <h3 style="font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <i class="fa-solid fa-photo-film" style="color: var(--primary-light);"></i> প্রমাণ ফাইল
+            </h3>
+            
+            {% if evidence %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+                    {% for ev in evidence %}
+                        <div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #000; text-align: center;">
+                            {% if ev.file_type == 'image' %}
+                                <a href="{{ ev.file.url }}" target="_blank">
+                                    <img src="{{ ev.file.url }}" alt="Evidence Image" style="width: 100%; height: 180px; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                </a>
+                            {% elif ev.file_type == 'video' %}
+                                <video width="100%" height="180" controls style="display: block; background: #000;">
+                                    <source src="{{ ev.file.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% endif %}
+                            <div style="padding: 8px; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-color);">
+                                <i class="fa-solid fa-file-arrow-down"></i> আপলোড: {{ ev.uploaded_at|date:"d M Y" }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="font-size: 13px; color: var(--text-muted); font-style: italic;">এই রিপোর্টের জন্য কোন মিডিয়া বা ফাইল প্রমাণ হিসেবে আপলোড করা হয়নি।</p>
+            {% endif %}
+        </div>
+
+        <!-- Map & Meta -->
+        <div>
+            <!-- Location coordinates & mini map -->
+            <div class="card" style="margin-bottom: 30px; padding: 20px;">
+                <h3 style="font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-map-location-dot" style="color: var(--secondary);"></i> ভৌগোলিক স্থানাঙ্ক</h3>
+                <p style="font-size: 13px; font-family: monospace; color: var(--text-muted); margin-bottom: 15px;">
+                    Latitude: <strong style="color: var(--text-main);">{{ report.latitude }}</strong><br>
+                    Longitude: <strong style="color: var(--text-main);">{{ report.longitude }}</strong>
+                </p>
+                
+                <div class="map-wrapper" style="border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                    <div id="detail-map" style="height: 250px; width: 100%; background: #111;"></div>
+                </div>
+
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ report.latitude }},{{ report.longitude }}" target="_blank" class="btn btn-outline" style="width: 100%;">
+                    <i class="fa-solid fa-diamond-turn-right"></i> Google Maps-এ খুলুন
+                </a>
+            </div>
+
+            <!-- Priority score breakdown (For staff / user reference) -->
+            <div class="card" style="padding: 20px;">
+                <h3 style="font-size: 18px; margin-bottom: 10px;"><i class="fa-solid fa-gauge-high" style="color: var(--primary-light);"></i> সিস্টেম প্রাধান্য ম্যাট্রিক্স</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">প্রতিক্রিয়া শ্রেণীবিভাগের জন্য স্বয়ংক্রিয় প্রাধান্য হিসাব।</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                        <span>জরুরীতা স্তর:</span>
+                        <strong>{{ report.urgency }} / 5</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                        <span>বিশ্বাসযোগ্যতা স্কোর:</span>
+                        <strong>{{ report.credibility }} / 5</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                        <span>প্রাধান্য স্কোর:</span>
+                        <strong style="color: {% if report.priority_score >= 30 %}#ff5252{% else %}#34d399{% endif %};">{{ report.priority_score }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Moderation Shortcut Button -->
+            {% if request.user.is_staff %}
+                <div class="card" style="margin-top: 30px; border-color: #fbbf24; background: rgba(251,191,36,0.02); padding: 20px; text-align: center;">
+                    <h4 style="color: #fbbf24; margin-bottom: 10px;"><i class="fa-solid fa-toolbox"></i> মডারেশন প্যানেল</h4>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">এই রিপোর্ট মডারেট করার প্রশাসনিক অধিকার আপনার কাছে রয়েছে।</p>
+                    <a href="{% url 'dashboard:moderate_report' pk=report.id %}" class="btn btn-primary" style="background: #fbbf24; color: #111; box-shadow: none; font-weight: 700; width: 100%;">
+                        রিপোর্ট মডারেট করুন
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var lat = parseFloat("{{ report.latitude }}");
+    var lng = parseFloat("{{ report.longitude }}");
+    
+    var map = L.map('detail-map').setView([lat, lng], 13);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 20
+    }).addTo(map);
+
+    var markerColor = "{% if report.severity == 'Critical' %}#a81c1c{% elif report.severity == 'High' %}#ef4444{% elif report.severity == 'Medium' %}#fbbf24{% else %}#10b981{% endif %}";
+
+    L.circleMarker([lat, lng], {
+        radius: 10,
+        fillColor: markerColor,
+        color: '#fff',
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map).bindPopup("<b>{{ report.title|escapejs }}</b>").openPopup();
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}আমাদের সম্পর্কে - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card" style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-size: 32px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <i class="fa-solid fa-circle-info" style="color: var(--primary-light);"></i> BorderWatch BD সম্পর্কে
+        </h1>
+        
+        <p style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);">
+            <strong>BorderWatch BD</strong> বাংলাদেশের সীমান্ত অঞ্চলগুলোর জন্য নিবিড়ভাবে তৈরি একটি স্বাধীন, নাগরিক-চালিত জননিরাপত্তা পর্যবেক্ষণ এবং সীমান্ত অপরাধ তথ্য সংগ্রহ প্ল্যাটফর্ম।
+        </p>
+
+        <p style="margin-bottom: 25px; font-size: 15px; color: var(--text-muted);">
+            Our border regions face unique challenges including smuggling, human trafficking, unauthorized border crossings, push-in attempts, and border violence. Due to the vast geographical span of these regions, local residents, farmers, travelers, and transport workers are often the first (and sometimes only) witnesses to suspicious activities or emergencies.
+        </p>
+
+        <div style="background: rgba(168,28,28,0.1); border: 1px solid rgba(168,28,28,0.25); border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="color: #ff5252; margin-bottom: 10px; font-size: 16px;"><i class="fa-solid fa-triangle-exclamation"></i> গুরুত্বপূর্ণ বিজ্ঞপ্তি</h3>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                এই প্ল্যাটফর্মটি Border Guard Bangladesh (BGB), বাংলাদেশের সরকার অথবা কোনো আইন প্রয়োগকারী সংস্থার সাথে সম্পর্কিত বা পরিচালিত নয়। এটি সম্পূর্ণভাবে স্বাধীন একটি তথ্যসংগ্রহ ও জননিরাপত্তা সেবা। যদি সরাসরি শারীরিক আত্মহানির ঝুঁকি বা সক্রিয় সংঘাত থাকে, তাহলে অবশ্যই অফিসিয়াল জরুরি লাইনে তৎক্ষণাৎ যোগাযোগ করুন।
+            </p>
+        </div>
+
+        <h3 style="font-size: 18px; margin-bottom: 12px; color: var(--text-main);">প্রধান লক্ষ্যসমূহ</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+            <li style="display: flex; gap: 10px; font-size: 14px;"><i class="fa-solid fa-check" style="color: #10b981;"></i> <span><strong>স্থানীয় সম্প্রদায়কে সক্ষম করা:</strong> সীমান্ত অঞ্চলের বাসিন্দাদের জন্য সহজ রিপোর্টিং ইন্টারফেস প্রদান।</span></li>
+            <li style="display: flex; gap: 10px; font-size: 14px;"><i class="fa-solid fa-check" style="color: #10b981;"></i> <span><strong>জরুরি সহায়তা মানচিত্র:</strong> নির্ভুল জিপিএস হিসাব ব্যবহার করে ব্যবহারকারীদের নিকটস্থ বিএজিবি ক্যাম্পের দিকে নির্দেশিত করা।</span></li>
+            <li style="display: flex; gap: 10px; font-size: 14px;"><i class="fa-solid fa-check" style="color: #10b981;"></i> <span><strong>ঘটনা ভিজ্যুয়ালাইজেশন:</strong> সচেতনতা তৈরির জন্য যাচাইকৃত ঘটনার একটি প্রকাশ্য মানচিত্র বজায় রাখা।</span></li>
+            <li style="display: flex; gap: 10px; font-size: 14px;"><i class="fa-solid fa-check" style="color: #10b981;"></i> <span><strong>গঠনমূলক তথ্যসংগ্রহ:</strong> সীমান্ত জেলাগুলোর নিরাপত্তা ঝুঁকি বিশ্লেষণের জন্য সংগঠিত পরিসংখ্যান ও নিদর্শন প্রদান।</span></li>
+        </ul>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; flex-wrap: wrap; gap: 15px;">
+                <span style="font-size: 13px; color: var(--text-muted);">অবদান রাখতে বা রিপোর্ট করতে আগ্রহী?</span>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'reports:submit_report' %}" class="btn btn-danger btn-sm">রিপোর্ট জমা দিন</a>
+                <a href="{% url 'core:guidelines' %}" class="btn btn-outline btn-sm">নিরাপত্তা নির্দেশিকা পড়ুন</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

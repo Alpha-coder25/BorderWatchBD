@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}ব্যবহারকারী সম্পাদনা - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    <div style="margin-bottom: 25px;">
+        <a href="{% url 'dashboard:admin_dashboard' %}" style="color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-arrow-left"></i> অ্যাডমিন ড্যাশবোর্ডে ফিরুন</a>
+        <h1 style="font-size: 28px; margin-top: 10px; color: #fbbf24;"><i class="fa-solid fa-user-pen"></i> ব্যবহারকারী অ্যাকাউন্ট সম্পাদনা</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">অ্যাকাউন্ট বিবরণ, প্রোফাইল ভূমিকা, জেলা এবং রিপোর্টার যাচাইকরণ স্থিতি হালনাগাদ করুন।</p>
+    </div>
+
+    <div class="card" style="padding: 30px; max-width: 700px; margin: 0 auto;">
+        <form method="POST" action="{% url 'dashboard:edit_user' pk=user_obj.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">ইউজারনেম</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">ইমেইল ঠিকানা</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">অ্যাকাউন্ট সক্রিয়</label>
+                {{ form.is_active }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">রিপোর্টার ভূমিকা</label>
+                {{ form.role }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">ফোন</label>
+                {{ form.phone }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">জাতীয় পরিচয়পত্র (NID)</label>
+                {{ form.nid }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">জেলা</label>
+                {{ form.district }}
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 12px;">
+                <label class="form-label" style="margin-bottom: 0;">যাচাইকৃত রিপোর্টার</label>
+                {{ form.is_verified }}
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">ব্যবহারকারী তথ্য সংরক্ষণ করুন</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

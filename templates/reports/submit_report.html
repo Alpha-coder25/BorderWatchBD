@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}সীমান্ত ঘটনা রিপোর্ট - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+        
+        <!-- Form Column -->
+        <div class="card" style="padding: 30px;">
+            <h1 style="font-size: 26px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: var(--secondary);"></i> সীমান্ত ঘটনা রিপোর্ট করুন
+            </h1>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">
+                পরিষ্কার এবং সঠিক তথ্য দিন। প্রমাণ সংরক্ষণের জন্য প্রাসঙ্গিক ছবি, ভিডিও বা ডকুমেন্ট আপলোড করুন।
+            </p>
+
+            <form method="POST" enctype="multipart/form-data" action="{% url 'reports:submit_report' %}">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div style="background: rgba(168, 28, 28, 0.15); border-left: 3px solid var(--secondary); padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; color: #ff5252;">
+                        নিচের ত্রুটিগুলো ঠিক করুন।
+                        <ul style="margin-top: 5px; margin-left: 15px;">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <!-- Guest Mode Anonymous Token -->
+                {% if not request.user.is_authenticated %}
+                    <div style="background: rgba(168,28,28,0.05); border: 1px solid rgba(168,28,28,0.15); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <h3 style="font-size: 14px; color: #ff6b6b; margin-bottom: 8px;"><i class="fa-solid fa-user-secret"></i> গেস্ট সাবমিশন মোড</h3>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Anonymous Token</label>
+                            <input type="text" name="token_str" id="id_token_str" class="form-control" placeholder="আপনার ২৪ ঘণ্টার অজ্ঞাত টোকেন এখানে পেস্ট করুন..." value="{{ request.GET.token|default:'' }}">
+                            <span class="form-help">টোকেন প্রয়োজন? <a href="{% url 'accounts:anonymous_token' %}" target="_blank" style="color: #ff6b6b; font-weight: 600;">এখানে টোকেন তৈরি করুন <i class="fa-solid fa-up-right-from-square" style="font-size:10px;"></i></a></span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label">ঘটনার শ্রেণি</label>
+                    {{ form.incident_type }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">শিরোনাম</label>
+                    {{ form.title }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">বিবরণ ও বিস্তারিত</label>
+                    {{ form.description }}
+                </div>
+
+                <!-- Coordinates fields -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">অক্ষাংশ (Latitude)</label>
+                        {{ form.latitude }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">দ্রাঘিমাংশ (Longitude)</label>
+                        {{ form.longitude }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">তীব্রতা</label>
+                        {{ form.severity }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">জরুরীতা (1 = নিম্ন, 5 = গুরুতর)</label>
+                        {{ form.urgency }}
+                    </div>
+                </div>
+
+                <!-- Evidence uploads -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 10px;">
+                    <h3 style="font-size: 15px; margin-bottom: 15px;"><i class="fa-solid fa-photo-film"></i> প্রমাণ সংযুক্ত করুন (প্রতি ফাইল সর্বোচ্চ 10MB)</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">প্রমাণ ফাইল ১ (ছবি/MP4)</label>
+                        {{ form.evidence_1 }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">প্রমাণ ফাইল ২ (ছবি/MP4)</label>
+                        {{ form.evidence_2 }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-danger" style="width: 100%; margin-top: 20px; padding: 12px; font-size: 15px;">
+                    <i class="fa-solid fa-circle-exclamation"></i> রিপোর্ট মডারেশন কিউতে জমা দিন
+                </button>
+            </form>
+        </div>
+        
+        <!-- Map Selection Column -->
+        <div style="position: sticky; top: 100px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 18px;"><i class="fa-solid fa-map-pin" style="color: var(--secondary);"></i> ঘটনার অবস্থান নির্ধারণ করুন</h3>
+                <button type="button" onclick="getPreciseLocation()" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-location-crosshairs"></i> আমার জিপিএস ব্যবহার করুন
+                </button>
+            </div>
+            
+            <div class="map-wrapper" style="border-radius: 12px; overflow: hidden;">
+                <div id="selection-map" style="height: 520px; width: 100%; background: #111;"></div>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">
+                <i class="fa-solid fa-info-circle"></i> মানচিত্র টেনে আনা এবং ঘটনা স্থানে ক্লিক করলে স্বয়ংক্রিয়ভাবে স্থানাঙ্ক আপডেট হবে।
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize map centered on Bangladesh border areas
+    var map = L.map('selection-map').setView([23.8103, 90.4125], 7);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 20
+    }).addTo(map);
+
+    var marker = null;
+
+    // Grab coordinates from fields if prepopulated (redirected from home click)
+    var initialLat = document.getElementById('id_latitude').value;
+    var initialLon = document.getElementById('id_longitude').value;
+
+    if (initialLat && initialLon) {
+        var coords = [parseFloat(initialLat), parseFloat(initialLon)];
+        map.setView(coords, 12);
+        marker = L.marker(coords).addTo(map);
+    }
+
+    // Map Click Handler
+    map.on('click', function(e) {
+        var lat = e.latlng.lat.toFixed(6);
+        var lng = e.latlng.lng.toFixed(6);
+
+        document.getElementById('id_latitude').value = lat;
+        document.getElementById('id_longitude').value = lng;
+
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        marker = L.marker(e.latlng).addTo(map);
+        marker.bindPopup("Selected Point: " + lat + ", " + lng).openPopup();
+    });
+
+    // GPS Geolocation Handler
+    function getPreciseLocation() {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude.toFixed(6);
+                var lng = position.coords.longitude.toFixed(6);
+
+                document.getElementById('id_latitude').value = lat;
+                document.getElementById('id_longitude').value = lng;
+
+                var coords = [lat, lng];
+                map.setView(coords, 14);
+
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                marker = L.marker(coords).addTo(map);
+                marker.bindPopup("Your GPS Location: " + lat + ", " + lng).openPopup();
+            },
+            function(error) {
+                alert("Unable to fetch location: " + error.message);
+            },
+            { enableHighAccuracy: true }
+        );
+    }
+</script>
+{% endblock %}

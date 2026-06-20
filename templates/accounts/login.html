@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}লগইন - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card">
+        <h1 style="font-size: 28px; margin-bottom: 10px; text-align: center;"><i class="fa-solid fa-lock" style="color: var(--secondary);"></i> ফিরে আসায় স্বাগতম</h1>
+        <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 30px;">
+            রিপোর্ট দেখার এবং প্রাধান্যপূর্ণ সাবমিশনে অ্যাক্সেস পেতে নিরাপদে লগইন করুন।
+        </p>
+
+        <form method="POST" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div style="background: rgba(168, 28, 28, 0.15); border-left: 3px solid var(--secondary); padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; color: #ff5252;">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="id_username">ইউজারনেম</label>
+                <input type="text" name="username" id="id_username" class="form-control" placeholder="আপনার ইউজারনেম লিখুন" required autofocus>
+                {% if form.username.errors %}
+                    <span style="color: #ff5252; font-size: 12px;">{{ form.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_password">পাসওয়ার্ড</label>
+                <input type="password" name="password" id="id_password" class="form-control" placeholder="আপনার পাসওয়ার্ড লিখুন" required>
+                {% if form.password.errors %}
+                    <span style="color: #ff5252; font-size: 12px;">{{ form.password.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> নিরাপদে লগইন
+            </button>
+        </form>
+
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 15px; font-size: 13px;">
+            <span style="color: var(--text-muted);">অ্যাকাউন্ট নেই? </span>
+            <a href="{% url 'accounts:register' %}" style="color: #52ff8f; font-weight: 600;">এখানে নিবন্ধন করুন</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

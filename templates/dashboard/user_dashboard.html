@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}আমার ড্যাশবোর্ড - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    <div style="margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+        <h1 style="font-size: 32px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-user-circle" style="color: #2563eb;"></i> আমার ড্যাশবোর্ড
+        </h1>
+        <p style="color: var(--text-muted); font-size: 14px;">আপনার প্রোফাইল বিবরণ দেখুন, রিপোর্টগুলো পরিচালনা করুন, এবং একাউন্ট সেটিংস অ্যাক্সেস করুন।</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start;">
+        <div class="card" style="position: sticky; top: 100px; padding: 25px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 80px; height: 80px; background: var(--primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; color: #fff; margin-bottom: 15px;">
+                    {{ request.user.username|slice:":1"|upper }}
+                </div>
+                <h2 style="font-size: 22px;">{{ request.user.username }}</h2>
+                <span style="font-size: 13px; color: var(--text-muted);">Joined on {{ request.user.date_joined|date:"d M Y" }}</span>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">{{ request.user.email }}</p>
+            </div>
+
+            <div style="display: grid; gap: 12px;">
+                <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 18px; border: 1px solid var(--border-color);">
+                    <strong>ভূমিকা</strong>
+                        <p style="margin: 5px 0 0; color: var(--text-muted);">{{ profile.get_role_display }}</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 18px; border: 1px solid var(--border-color);">
+                        <strong>জেলা</strong>
+                        <p style="margin: 5px 0 0; color: var(--text-muted);">{{ profile.district|default:'সেট করা নেই' }}</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 18px; border: 1px solid var(--border-color);">
+                        <strong>স্থিতি</strong>
+                        <p style="margin: 5px 0 0; color: var(--text-muted);">{% if profile.is_verified %}যাচাইকৃত রিপোর্টার{% else %}সাধারণ রিপোর্টার{% endif %}</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline btn-sm">প্রোফাইল সম্পাদনা</a>
+                <a href="{% url 'reports:submit_report' %}" class="btn btn-primary btn-sm">নতুন রিপোর্ট জমা দিন</a>
+            </div>
+        </div>
+
+        <div>
+            <h2 style="font-size: 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-file-lines" style="color: var(--primary-light);"></i> আপনার রিপোর্টসমূহ
+            </h2>
+
+            {% if reports %}
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    {% for report in reports %}
+                        <div class="card" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div style="flex: 1; min-width: 250px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                                    <span class="badge {% if report.status == 'Verified' %}badge-verified{% elif report.status == 'Pending' %}badge-pending{% elif report.status == 'Rejected' %}badge-rejected{% else %}badge-escalated{% endif %}">{% if report.status == 'Verified' %}যাচাইকৃত{% elif report.status == 'Pending' %}প্রক্রিয়াধীন{% elif report.status == 'Rejected' %}প্রত্যাখ্যাত{% else %}ঊর্ধ্বতন{% endif %}</span>
+                                    <span class="badge {% if report.severity == 'Critical' %}badge-critical{% elif report.severity == 'High' %}badge-high{% elif report.severity == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">{% if report.severity == 'Critical' %}গুরুতর{% elif report.severity == 'High' %}উচ্চ{% elif report.severity == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}</span>
+                                </div>
+                                <h3 style="font-size: 16px; margin-bottom: 5px;">{{ report.title }}</h3>
+                                <p style="font-size: 13px; color: var(--text-muted);">জমা: {{ report.created_at|date:"d M Y, h:i A" }} · {{ report.incident_type.name }}</p>
+                            </div>
+                            <div>
+                                <a href="{% url 'reports:report_detail' pk=report.id %}" class="btn btn-outline btn-sm">বিস্তারিত দেখুন</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <i class="fa-solid fa-folder-open" style="font-size: 40px; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 18px; margin-bottom: 5px;">No incident reports yet</h3>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Submit your first report and help keep our border community safer.</p>
+                    <a href="{% url 'reports:submit_report' %}" class="btn btn-primary">Submit Report</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

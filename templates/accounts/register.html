@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}নিবন্ধন - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card" style="max-width: 600px;">
+        <h1 style="font-size: 28px; margin-bottom: 10px; text-align: center;"><i class="fa-solid fa-user-plus" style="color: var(--primary-light);"></i> BorderWatch BD-এ যোগ দিন</h1>
+        <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 30px;">
+            প্রমাণ সংরক্ষণ এবং ঘটনার স্থিতি ট্র্যাক করতে একটি সিভিলিয়ান রিপোর্টার একাউন্ট তৈরি করুন।
+        </p>
+
+        <form method="POST" action="{% url 'accounts:register' %}">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div style="background: rgba(168, 28, 28, 0.15); border-left: 3px solid var(--secondary); padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; color: #ff5252;">
+                    নিচের ফর্মের ত্রুটিগুলো সংশোধন করুন।
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="id_username">ইউজারনেম</label>
+                <input type="text" name="username" id="id_username" class="form-control" required placeholder="একটি অনন্য ইউজারনেম বাছুন" value="{{ form.username.value|default:'' }}">
+                {% if form.username.errors %}
+                    <span style="color: #ff5252; font-size: 12px;">{{ form.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_email">ইমেইল ঠিকানা</label>
+                <input type="email" name="email" id="id_email" class="form-control" required placeholder="সক্রিয় ইমেইল ঠিকানা লিখুন" value="{{ form.email.value|default:'' }}">
+                {% if form.email.errors %}
+                    <span style="color: #ff5252; font-size: 12px;">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label" for="id_role">পরিচয় / ভূমিকা</label>
+                    <select name="role" id="id_role" class="form-select">
+                        {% for value, text in form.fields.role.choices %}
+                            <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="id_phone">ফোন নম্বর</label>
+                    <input type="text" name="phone" id="id_phone" class="form-control" placeholder="যেমন +88017..." value="{{ form.phone.value|default:'' }}">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label" for="id_nid">জাতীয় পরিচয়পত্র (NID)</label>
+                    <input type="text" name="nid" id="id_nid" class="form-control" placeholder="ঐচ্ছিক" value="{{ form.nid.value|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="id_district">সীমান্ত জেলা</label>
+                    <input type="text" name="district" id="id_district" class="form-control" placeholder="উদাহরণ: কুড়িগ্রাম, কক্সবাজার" value="{{ form.district.value|default:'' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_password1">পাসওয়ার্ড</label>
+                <input type="password" name="password1" id="id_password1" class="form-control" required placeholder="পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে">
+                {% if form.password1.errors %}
+                    <span style="color: #ff5252; font-size: 12px;">{{ form.password1.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_password2">পাসওয়ার্ড নিশ্চিতকরণ</label>
+                <input type="password" name="password2" id="id_password2" class="form-control" required placeholder="পাসওয়ার্ড পুনরায় লিখুন">
+                {% if form.password2.errors %}
+                    <span style="color: #ff5252; font-size: 12px;">{{ form.password2.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 12px;">
+                <i class="fa-solid fa-user-check"></i> অ্যাকাউন্ট নিবন্ধন করুন
+            </button>
+        </form>
+
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 15px; font-size: 13px;">
+            <span style="color: var(--text-muted);">ইতিমধ্যে নিবন্ধিত? </span>
+            <a href="{% url 'accounts:login' %}" style="color: #52ff8f; font-weight: 600;">এখানে সাইন ইন করুন</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

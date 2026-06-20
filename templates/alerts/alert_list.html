@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}ঝুঁকি সতর্কবার্তা - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    
+    <div style="margin-bottom: 30px;">
+        <h1 style="font-size: 30px; letter-spacing: -0.5px;">জরুরি সতর্কবার্তা ও বিজ্ঞপ্তি</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">গুরুত্বপূর্ণ নিরাপত্তা আপডেট, সীমান্তভিত্তিক নিষেধ অঞ্চল সংক্রান্ত সতর্কতা, এবং নিখোঁজ ব্যক্তির তালিকা।</p>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="card" style="padding: 15px 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; border-color: var(--border-color);">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'alerts:alert_list' %}" class="btn btn-sm {% if not selected_type %}btn-primary{% else %}btn-outline{% endif %}">সকল বিজ্ঞপ্তি</a>
+            <a href="{% url 'alerts:alert_list' %}?type=danger_warning" class="btn btn-sm {% if selected_type == 'danger_warning' %}btn-primary{% else %}btn-outline{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i> ঝুঁকি সতর্কতা</a>
+            <a href="{% url 'alerts:alert_list' %}?type=missing_person" class="btn btn-sm {% if selected_type == 'missing_person' %}btn-primary{% else %}btn-outline{% endif %}"><i class="fa-solid fa-users"></i> নিখোঁজ ব্যক্তি</a>
+            <a href="{% url 'alerts:alert_list' %}?type=general_alert" class="btn btn-sm {% if selected_type == 'general_alert' %}btn-primary{% else %}btn-outline{% endif %}"><i class="fa-solid fa-info-circle"></i> সাধারণ বিজ্ঞপ্তি</a>
+        </div>
+        
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span style="font-size: 12px; color: var(--text-muted);">গুরুত্ত্ব:</span>
+            <a href="{% url 'alerts:alert_list' %}?priority=Critical" class="badge badge-critical" style="text-decoration: none;">শুধুমাত্র গুরুতর</a>
+        </div>
+    </div>
+
+    <!-- Alerts Stack -->
+    {% if alerts %}
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for alert in alerts %}
+                <div class="card" style="padding: 24px; border-left: 5px solid {% if alert.priority == 'Critical' %}#ff5252{% elif alert.priority == 'High' %}#f59e0b{% else %}#10b981{% endif %}; background: rgba(0,0,0,0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">
+                            <i class="fa-solid {% if alert.type == 'danger_warning' %}fa-triangle-exclamation{% elif alert.type == 'missing_person' %}fa-user-tag{% else %}fa-bullhorn{% endif %}"></i>
+                            {% if alert.type == 'danger_warning' %}ঝুঁকি সতর্কতা{% elif alert.type == 'missing_person' %}নিখোঁজ ব্যক্তি{% else %}সাধারণ বিজ্ঞপ্তি{% endif %}
+                        </span>
+                        
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge {% if alert.priority == 'Critical' %}badge-critical{% elif alert.priority == 'High' %}badge-high{% elif alert.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">{% if alert.priority == 'Critical' %}গুরুতর{% elif alert.priority == 'High' %}উচ্চ{% elif alert.priority == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}</span>
+                            <span style="font-size: 12px; color: var(--text-muted);">প্রকাশিত: {{ alert.created_at|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 18px; margin-bottom: 10px; color: var(--text-main);">{{ alert.title }}</h3>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; white-space: pre-line;">{{ alert.description }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card" style="text-align: center; padding: 50px;">
+            <i class="fa-solid fa-bell-slash" style="font-size: 40px; color: var(--text-muted); margin-bottom: 15px;"></i>
+            <h3 style="font-size: 18px; margin-bottom: 5px;">কোন সক্রিয় সতর্কতা নেই</h3>
+            <p style="color: var(--text-muted); font-size: 14px;">এই ফিল্টারের জন্য বর্তমানে কোন সক্রিয় ঝুঁকি সতর্কতা বা নিখোঁজ ব্যক্তি বিজ্ঞপ্তি নেই।</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

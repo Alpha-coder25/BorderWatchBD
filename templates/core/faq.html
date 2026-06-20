@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}প্রায়শই জিজ্ঞাসিত প্রশ্নাবলী - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 50px; padding-bottom: 50px;">
+    <div class="form-card" style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-size: 32px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <i class="fa-solid fa-circle-question" style="color: var(--primary-light);"></i> প্রায়শই জিজ্ঞাসিত প্রশ্নাবলী
+        </h1>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--text-main);">প্রশ্ন: কী এটি সরকারী কোনো অ্যাপ্লিকেশন?</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                    না। BorderWatch BD একটি স্বাধীন, নাগরিক-চালিত জননিরাপত্তা ও তথ্য সংগ্রহ উদ্যোগ। এটি Border Guard Bangladesh (BGB), স্বরাষ্ট্র মন্ত্রনালয় বা অন্য কোনো সরকারি নিরাপত্তা বাহিনীর সাথে সংযুক্ত নয় এবং কোন অনুমোদন নেই।
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--text-main);">প্রশ্ন: জমা দেওয়া রিপোর্ট কারা যাচাই করে?</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                    সমস্ত সাবমিশন শুরুতে একটি মডারেশন কিউতে যায়। প্ল্যাটফর্ম অ্যাডমিনরা তথ্য, ভৌগোলিক মিল যাচাই, নকল শনাক্তকরণ নিয়ম এবং রিপোর্টার যাচাইকরণ ব্যবস্থা ব্যবহার করে রিপোর্ট যাচাই করে। শুধু যাচাইকৃত আইটেমগুলোই প্রকাশ করা হয়।
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--text-main);">প্রশ্ন: কি আমি পুরোপুরি অজ্ঞাতভাবে (Anonymous) রিপোর্ট করতে পারি?</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                    হ্যাঁ। রিপোর্টারের নিরাপত্তাকে আমরা সম্মান করি। আপনি ইমেইল বা NID ছাড়াই ২৪ ঘণ্টার অজ্ঞাত রিপোর্টিং টোকেন জেনারেট করতে পারবেন। টোকেনসহ রিপোর্ট করলে আপনার অবস্থান/ফাইল আপলোড রেকর্ড হবে কিন্তু কোনো ব্যবহারকারীর পরিচয়ের সাথে সংযুক্ত হবে না।
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--text-main);">প্রশ্ন: নিকটস্থ বিএজিবি ক্যাম্প কীভাবে নির্ধারিত হয়?</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                    যখন আপনি আপনার অবস্থান শেয়ার করেন, ওয়েবসাইটের Backend Haversine সূত্র ব্যবহার করে আপনার স্থানাঙ্ক ও ডাটাবেসের সক্রিয় ক্যাম্পগুলোর মধ্যে দূরত্ব হিসাব করে এবং সবচেয়ে নিকটস্থ ক্যাম্প দেখায়। এই তথ্যটি শুধুমাত্র আপনার রিপোর্টের সাথে সংযুক্ত করা হয় এবং কোনো ব্যবহারকারীর প্রোফাইলে সংরক্ষিত হয় না।
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--text-main);">প্রশ্ন: সীমান্তে জরুরি ঘটনায় আমি কী করব?</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                    রিপোর্টের জন্য অপেক্ষা করবেন না। হোম পৃষ্ঠার জরুরি লোকেটর ব্যবহার করে নিকটস্থ ক্যাম্পের ফোন নম্বর সংগ্রহ করুন, সরাসরি কল করুন বা তৎক্ষণাৎ জাতীয় নিরাপত্তা চ্যানেলগুলোতে যোগাযোগ করুন। নিজের নিরাপত্তার জন্য আড়ালে থাকুন এবং নিঃশব্দ অবস্থায় থাকুন।
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

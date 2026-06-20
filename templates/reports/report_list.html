@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}যাচাইকৃত ঘটনা - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    
+    <div style="margin-bottom: 30px;">
+        <h1 style="font-size: 30px; letter-spacing: -0.5px;">যাচাইকৃত সীমান্ত ঘটনা</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">এই তালিকায় শুধুমাত্র যাচাইকৃত নাগরিক রিপোর্ট দেখানো হয়। ফলাফল সংকুচিত করতে ফিল্টার ব্যবহার করুন।</p>
+    </div>
+
+    <!-- Filter Controls Panel -->
+    <div class="card" style="padding: 20px; margin-bottom: 30px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border-color: var(--border-color);">
+        <form method="GET" action="{% url 'reports:report_list' %}" style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%;">
+            
+            <div style="flex: 1; min-width: 200px;">
+                <label class="form-label" style="margin-bottom: 5px; font-size: 12px;">ঘটনার শ্রেণি</label>
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">সব বিভাগ</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" {% if selected_category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="flex: 1; min-width: 150px;">
+                <label class="form-label" style="margin-bottom: 5px; font-size: 12px;">তীব্রতা</label>
+                <select name="severity" class="form-select" onchange="this.form.submit()">
+                    <option value="">সব তীব্রতা</option>
+                    <option value="Low" {% if selected_severity == 'Low' %}selected{% endif %}>নিম্ন</option>
+                    <option value="Medium" {% if selected_severity == 'Medium' %}selected{% endif %}>মধ্যম</option>
+                    <option value="High" {% if selected_severity == 'High' %}selected{% endif %}>উচ্চ</option>
+                    <option value="Critical" {% if selected_severity == 'Critical' %}selected{% endif %}>গুরুতর</option>
+                </select>
+            </div>
+
+            <div style="flex: 1; min-width: 150px;">
+                <label class="form-label" style="margin-bottom: 5px; font-size: 12px;">সময়কাল</label>
+                <select name="date_range" class="form-select" onchange="this.form.submit()">
+                    <option value="">সর্বকালের</option>
+                    <option value="today" {% if selected_date == 'today' %}selected{% endif %}>আজ</option>
+                    <option value="week" {% if selected_date == 'week' %}selected{% endif %}>গত ৭ দিন</option>
+                    <option value="month" {% if selected_date == 'month' %}selected{% endif %}>গত ৩০ দিন</option>
+                </select>
+            </div>
+
+            <div style="display: flex; align-items: flex-end;">
+                <a href="{% url 'reports:report_list' %}" class="btn btn-outline" style="padding: 11px 16px;"><i class="fa-solid fa-arrow-rotate-left"></i> রিসেট</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Incidents Grid -->
+    {% if reports %}
+        <div class="card-grid">
+            {% for report in reports %}
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <span class="badge {% if report.severity == 'Critical' %}badge-critical{% elif report.severity == 'High' %}badge-high{% elif report.severity == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
+                            {% if report.severity == 'Critical' %}গুরুতর{% elif report.severity == 'High' %}উচ্চ{% elif report.severity == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}
+                        </span>
+                        <span style="font-size: 12px; color: var(--text-muted);">{{ report.created_at|date:"d M Y" }}</span>
+                    </div>
+
+                    <h3 class="card-title">{{ report.title }}</h3>
+                    <p class="card-desc">{{ report.description|truncatewords:25 }}</p>
+
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: var(--primary-light); font-weight: 500;">
+                            <i class="fa-solid fa-folder"></i> {{ report.incident_type.name }}
+                        </span>
+                        
+                        <a href="{% url 'reports:report_detail' pk=report.id %}" class="btn btn-primary btn-sm" style="padding: 6px 12px;">
+                            বিস্তারিত <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card" style="text-align: center; padding: 60px;">
+            <i class="fa-solid fa-map-location" style="font-size: 50px; color: var(--text-muted); margin-bottom: 20px;"></i>
+            <h3 style="font-size: 20px; margin-bottom: 8px;">কোন যাচাইকৃত রিপোর্ট পাওয়া যায়নি</h3>
+            <p style="color: var(--text-muted); font-size: 14px; max-width: 450px; margin: 0 auto 20px;">
+                আপনার নির্বাচিত ফিল্টারের সাথে কোন ঘটনা মেলে না, অথবা এই বিভাগে কোনো রিপোর্ট মডারেটর দ্বারা এখনও যাচাই করা হয়নি।
+            </p>
+            <a href="{% url 'reports:submit_report' %}" class="btn btn-danger"><i class="fa-solid fa-plus"></i> রিপোর্ট জমা দিন</a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

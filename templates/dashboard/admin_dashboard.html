@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}অ্যাডমিন অপারেশনস - BorderWatch BD{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    
+    <div style="margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+        <h1 style="font-size: 32px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-gauge" style="color: #fbbf24;"></i> অপারেশন কন্ট্রোল সেন্টার
+        </h1>
+        <p style="color: var(--text-muted); font-size: 14px;">মুলত: প্রক্রিয়াধীন রিপোর্টগুলো পর্যালোচনা করুন, উচ্চ ঝুঁকির হটজোন বিশ্লেষণ করুন এবং স্থিতি আপডেট লগ করুন।</p>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+        <div class="card" style="text-align: center; border-color: #fbbf24;">
+            <h1 style="font-size: 38px; color: #fbbf24;">{{ pending_reports.count }}</h1>
+            <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase;">প্রক্রিয়াধীন পর্যালোচনা</p>
+        </div>
+        <div class="card" style="text-align: center; border-color: #10b981;">
+            <h1 style="font-size: 38px; color: #10b981;">{{ verified_reports_count }}</h1>
+            <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase;">যাচাইকৃত প্রকাশ্য</p>
+        </div>
+        <div class="card" style="text-align: center; border-color: #a78bfa;">
+            <h1 style="font-size: 38px; color: #a78bfa;">{{ escalated_reports_count }}</h1>
+            <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase;">ঊর্ধ্বতন প্রেরিত</p>
+        </div>
+        <div class="card" style="text-align: center; border-color: #f87171;">
+            <h1 style="font-size: 38px; color: #f87171;">{{ high_priority_count }}</h1>
+            <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase;">উচ্চ প্রাধান্য সতর্কতা</p>
+        </div>
+    </div>
+
+    <!-- Heatmap & Risk Score Grid -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px; align-items: start;">
+        
+        <!-- Hotspots Heatmap -->
+        <div class="card" style="padding: 25px;">
+            <h3 style="font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-fire" style="color: var(--secondary);"></i> কৃত্রিম হটস্পট (হিটম্যাপ ভিজ্যুয়ালাইজার)</h3>
+            <div class="map-wrapper" style="border-radius: 8px;">
+                <div id="heatmap-map" style="height: 380px; width: 100%; background: #111;"></div>
+            </div>
+        </div>
+
+        <!-- Risk Scores -->
+        <div class="card" style="padding: 25px; max-height: 460px; overflow-y: auto;">
+            <h3 style="font-size: 18px; margin-bottom: 5px;"><i class="fa-solid fa-shield-halved" style="color: var(--primary-light);"></i> জেলার ঝুঁকি স্কোর</h3>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">যাচাইকৃত ঘটনা * ওজন / ৩০ দিন</p>
+
+            {% if risk_scores %}
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for score in risk_scores %}
+                        <div style="background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 14px;">{{ score.district }}</strong>
+                                <p style="font-size: 11px; color: var(--text-muted);">{{ score.count }} incidents filed</p>
+                            </div>
+                            <span class="badge" style="background: {% if score.score >= 0.5 %}rgba(168,28,28,0.2){% elif score.score >= 0.2 %}rgba(245,158,11,0.2){% else %}rgba(16,185,129,0.2){% endif %}; color: {% if score.score >= 0.5 %}#ff5252{% elif score.score >= 0.2 %}#fbbf24{% else %}#34d399{% endif %}; font-family: monospace; font-size: 13px; font-weight: 700; padding: 4px 8px;">
+                                {{ score.score }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="font-size: 13px; color: var(--text-muted); font-style: italic;">স্কোর তৈরির জন্য যাচাইকৃত ঘটনার তথ্য নেই।</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Admin management grid -->
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; margin-bottom: 40px;">
+        <div class="card" style="padding: 25px;">
+            <h3 style="font-size: 20px; margin-bottom: 18px;"><i class="fa-solid fa-users" style="color: #3b82f6;"></i> সাধারণ ব্যবহারকারীর অ্যাকাউন্ট ({{ general_users_count }})</h3>
+            {% if general_users %}
+                <div style="display: grid; gap: 12px; max-height: 400px; overflow-y: auto;">
+                    {% for profile in general_users %}
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                            <div>
+                                <strong>{{ profile.user.username }}</strong>
+                                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 13px;">{{ profile.user.email }} · {{ profile.get_role_display }}</p>
+                                <p style="margin: 4px 0 0; color: var(--text-muted); font-size: 12px;">District: {{ profile.district|default:'Not set' }}</p>
+                            </div>
+                                <a href="{% url 'dashboard:edit_user' pk=profile.user.id %}" class="btn btn-outline btn-sm">সম্পাদনা</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--text-muted);">কোন সাধারণ ব্যবহারকারী পাওয়া যায়নি।</p>
+            {% endif %}
+        </div>
+
+        <div class="card" style="padding: 25px;">
+            <h3 style="font-size: 20px; margin-bottom: 18px;"><i class="fa-solid fa-earth-americas" style="color: #10b981;"></i> পাবলিক সাইট রিপোর্ট</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">ভিসিটরদের জন্য প্রকাশ্য মানচিত্রে প্রদর্শিত যাচাইকৃত রিপোর্টসমূহ।</p>
+            {% if public_reports %}
+                <div style="display: grid; gap: 12px; max-height: 400px; overflow-y: auto;">
+                    {% for report in public_reports %}
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                            <div>
+                                <strong>{{ report.title }}</strong>
+                                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 13px;">{{ report.incident_type.name }} · {{ report.created_at|date:"d M Y" }}</p>
+                            </div>
+                            <form method="post" action="{% url 'dashboard:toggle_report_display' pk=report.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline btn-sm">লুকান</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--text-muted);">বর্তমানে পাবলিক সাইটে কোনো রিপোর্ট দৃশ্যমান নেই।</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Moderation queue list -->
+    <div class="card" style="padding: 30px;">
+        <h2 style="font-size: 22px; margin-bottom: 20px;"><i class="fa-solid fa-list-check" style="color: #fbbf24;"></i> আগত রিপোর্টসমূহ মডারেশন কিউ
+        </h2>
+        
+        {% if pending_reports %}
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for report in pending_reports %}
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; {% if report.is_possible_duplicate %}border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.02);{% elif report.is_priority %}border-color: rgba(168, 28, 28, 0.4); background: rgba(168, 28, 28, 0.02);{% endif %}">
+                        <div style="flex: 1; min-width: 250px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span class="badge {% if report.severity == 'Critical' %}badge-critical{% elif report.severity == 'High' %}badge-high{% elif report.severity == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">{% if report.severity == 'Critical' %}গুরুতর{% elif report.severity == 'High' %}উচ্চ{% elif report.severity == 'Medium' %}মধ্যম{% else %}নিম্ন{% endif %}</span>
+                                <span class="badge badge-pending">প্রাধান্য স্কোর: {{ report.priority_score }}</span>
+                                
+                                {% if report.is_possible_duplicate %}
+                                    <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-copy"></i> সম্ভাব্য নকল</span>
+                                {% endif %}
+                                {% if report.is_priority %}
+                                    <span class="badge badge-critical" style="background: rgba(168,28,28,0.15); color: #ff5252; border: 1px solid rgba(168,28,28,0.3);"><i class="fa-solid fa-fire"></i> জরুরী পতাকা</span>
+                                {% endif %}
+                            </div>
+                            
+                            <h3 style="font-size: 16px; margin-bottom: 5px;">{{ report.title }}</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">{{ report.description|truncatewords:20 }}</p>
+                            
+                            <p style="font-size: 11px; color: var(--text-muted);">
+                                বিভাগ: <strong>{{ report.incident_type.name }}</strong> &bull; 
+                                জমা: {{ report.created_at|date:"d M Y, h:i A" }} 
+                                <strong>{% if report.user %}{{ report.user.username }} (জেলা: {{ report.user.profile.district|default:"None" }}){% else %}অতিথি (অজ্ঞাত){% endif %}</strong>
+                            </p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <a href="{% url 'reports:report_detail' pk=report.id %}" class="btn btn-outline btn-sm">
+                                <i class="fa-solid fa-eye"></i> বিস্তারিত দেখুন
+                            </a>
+                            <a href="{% url 'dashboard:moderate_report' pk=report.id %}" class="btn btn-primary btn-sm" style="background: #fbbf24; color: #111; border: none; font-weight: 700; box-shadow: none;">
+                                <i class="fa-solid fa-circle-check"></i> মডারেট করুন
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fa-solid fa-clipboard-check" style="font-size: 40px; margin-bottom: 15px;"></i>
+                <p>The queue is currently clear! There are no pending reports waiting for moderation.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize heatmap visualizer map
+    var map = L.map('heatmap-map').setView([23.8103, 90.4125], 7);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap & CARTO',
+        maxZoom: 20
+    }).addTo(map);
+
+    // Fetch heatmap data from API
+    fetch('{% url "dashboard:heatmap_data_api" %}')
+        .then(response => response.json())
+        .then(res => {
+            if (res.success && res.data.length > 0) {
+                res.data.forEach(function(point) {
+                    // Create circle marker mapping crime density
+                    // (Translating weights into circle radius and fillOpacity)
+                    var radius = Math.min(10 + point.count * 4, 30);
+                    var fillOpacity = Math.min(0.2 + point.count * 0.15, 0.85);
+
+                    L.circle([point.lat, point.lng], {
+                        radius: radius * 350,  // radius in meters
+                        fillColor: '#ef4444',
+                        color: 'transparent',
+                        fillOpacity: fillOpacity
+                    }).addTo(map);
+                });
+            }
+        })
+        .catch(err => console.error("Error loading heatmap: ", err));
+</script>
+{% endblock %}
