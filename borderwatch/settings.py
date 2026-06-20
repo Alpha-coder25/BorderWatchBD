@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import environ
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +25,7 @@ if env_file.exists():
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
-ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -78,13 +79,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'borderwatch.wsgi.application'
 
 # Database
-# If MYSQL is configured, use it. Otherwise fall back to SQLite for local development.
-# Check for environment variables, or check if we can connect to MySQL (dynamic fallback)
-MYSQL_CONFIGURED = False
-if env('DB_NAME') and (os.environ.get('DATABASE_URL') or os.environ.get('DB_USER')):
-    MYSQL_CONFIGURED = True
-
-if MYSQL_CONFIGURED:
+# Priority: DATABASE_URL (Render) > MySQL config > SQLite (dev)
+if os.environ.get('DATABASE_URL'):
+    # Render deployment with PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+elif env('DB_NAME') and os.environ.get('DB_USER'):
+    # MySQL configuration (local or custom server)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -100,7 +106,7 @@ if MYSQL_CONFIGURED:
         }
     }
 else:
-    # Fallback to SQLite for easy development/testing
+    # Fallback to SQLite for local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -152,6 +158,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication URLs
 LOGIN_URL = 'accounts:login'
+
+# CSRF and Security Settings for Production
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if os.environ.get('CSRF_TRUSTED_ORIGINS') else []
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 LOGIN_REDIRECT_URL = 'core:home'
 LOGOUT_REDIRECT_URL = 'core:home'
 
