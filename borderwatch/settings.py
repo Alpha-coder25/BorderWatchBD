@@ -150,6 +150,7 @@ STATICFILES_DIRS = [
 
 # WhiteNoise compression for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+WHITENOISE_USE_FINDERS = True
 
 # Media files (uploaded reports evidence)
 MEDIA_URL = '/media/'
