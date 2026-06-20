@@ -1,1 +1,6 @@
 __pycache__/\n*.pyc\ndb.sqlite3\nmedia/\n.env\n
+db.sqlite3
+media/
+__pycache__/
+.env
+staticfiles/
